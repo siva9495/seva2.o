@@ -23,7 +23,7 @@
         android:layout_height="80dp"
         android:layout_centerInParent="true"
         android:alpha="1.0"
-        android:src="@drawable/ic_forward" />
+        android:src="@drawable/icon_describescene" />
 
     <!-- Next Icon (Right Side with less opacity) -->
     <ImageView
@@ -34,6 +34,6 @@
         android:layout_centerVertical="true"
         android:layout_marginEnd="16dp"
         android:alpha="0.3"
-        android:src="@drawable/ic_right" />
+        android:src="@drawable/icon_navigate" />
 
 </RelativeLayout>

@@ -1,15 +1,12 @@
 package com.siva.seva2o;
 
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import java.util.ArrayList;
 
@@ -18,6 +15,7 @@ public class DashboardActivity extends AppCompatActivity {
     private ImageView iconPrevious, iconCurrent, iconNext;
     private ArrayList<Integer> icons;
     private int currentIndex = 0;
+    private MediaPlayer mediaPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,9 +34,11 @@ public class DashboardActivity extends AppCompatActivity {
         icons.add(R.drawable.ic_right);
         icons.add(R.drawable.ic_backward);
 
+        // Initialize MediaPlayer
+        mediaPlayer = new MediaPlayer();
+
         // Set initial state
         updateIcons();
-
     }
 
     // Handle key events for navigation
@@ -57,13 +57,27 @@ public class DashboardActivity extends AppCompatActivity {
     // Move to the next icon
     private void moveRight() {
         currentIndex = (currentIndex + 1) % icons.size();
+        playSound();
         updateIcons();
     }
 
     // Move to the previous icon
     private void moveLeft() {
         currentIndex = (currentIndex - 1 + icons.size()) % icons.size();
+        playSound();
         updateIcons();
+    }
+
+    // Play sound effect
+    private void playSound() {
+        if (mediaPlayer.isPlaying()) {
+            // Stop the ongoing sound if it's playing
+            mediaPlayer.stop();
+        }
+        // Reset MediaPlayer and prepare the new sound
+        mediaPlayer.reset();
+        mediaPlayer = MediaPlayer.create(this, R.raw.iconsmovingclicksound);
+        mediaPlayer.start();
     }
 
     // Update icon visibility and opacity
@@ -90,4 +104,13 @@ public class DashboardActivity extends AppCompatActivity {
         iconNext.setAlpha(0.3f);
     }
 
+    @Override
+    protected void onDestroy() {
+        // Release MediaPlayer when activity is destroyed
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+        super.onDestroy();
+    }
 }

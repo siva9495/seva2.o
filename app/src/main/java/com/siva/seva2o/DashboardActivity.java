@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -13,7 +14,9 @@ import java.util.ArrayList;
 public class DashboardActivity extends AppCompatActivity {
 
     private ImageView iconPrevious, iconCurrent, iconNext;
+    private TextView iconNameTextView;
     private ArrayList<Integer> icons;
+    private ArrayList<String> iconNames;
     private int currentIndex = 0;
     private MediaPlayer mediaPlayer;
 
@@ -26,13 +29,29 @@ public class DashboardActivity extends AppCompatActivity {
         iconPrevious = findViewById(R.id.icon_previous);
         iconCurrent = findViewById(R.id.icon_current);
         iconNext = findViewById(R.id.icon_next);
+        iconNameTextView = findViewById(R.id.icon_name);
 
         // List of icons
         icons = new ArrayList<>();
-        icons.add(R.drawable.ic_forward);
-        icons.add(R.drawable.ic_left);
-        icons.add(R.drawable.ic_right);
-        icons.add(R.drawable.ic_backward);
+        icons.add(R.drawable.icon_describescene);
+        icons.add(R.drawable.icon_navigate);
+        icons.add(R.drawable.icon_findobject);
+        icons.add(R.drawable.icon_facerecog);
+        icons.add(R.drawable.icon_readforme);
+        icons.add(R.drawable.icon_talktome);
+        icons.add(R.drawable.icon_sos);
+        icons.add(R.drawable.icon_settings);
+
+        // List of icon names
+        iconNames = new ArrayList<>();
+        iconNames.add("Describe Scene");
+        iconNames.add("Navigate");
+        iconNames.add("Find Object");
+        iconNames.add("Face Recognition");
+        iconNames.add("Read For Me");
+        iconNames.add("Talk To Me");
+        iconNames.add("SOS");
+        iconNames.add("Settings");
 
         // Initialize MediaPlayer
         mediaPlayer = new MediaPlayer();
@@ -70,17 +89,19 @@ public class DashboardActivity extends AppCompatActivity {
 
     // Play sound effect
     private void playSound() {
-        if (mediaPlayer.isPlaying()) {
-            // Stop the ongoing sound if it's playing
-            mediaPlayer.stop();
+        try {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+            }
+            mediaPlayer.reset();
+            mediaPlayer = MediaPlayer.create(this, R.raw.iconsmovingclicksound);
+            mediaPlayer.start();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        // Reset MediaPlayer and prepare the new sound
-        mediaPlayer.reset();
-        mediaPlayer = MediaPlayer.create(this, R.raw.iconsmovingclicksound);
-        mediaPlayer.start();
     }
 
-    // Update icon visibility and opacity
+    // Update icon visibility, opacity, and name
     private void updateIcons() {
         // Set previous icon
         int prevIndex = (currentIndex - 1 + icons.size()) % icons.size();
@@ -96,6 +117,9 @@ public class DashboardActivity extends AppCompatActivity {
         // Set current icon
         iconCurrent.setImageResource(icons.get(currentIndex));
         iconCurrent.setAlpha(1.0f);
+
+        // Update the TextView with the current icon name
+        iconNameTextView.setText(iconNames.get(currentIndex));
 
         // Set next icon
         int nextIndex = (currentIndex + 1) % icons.size();

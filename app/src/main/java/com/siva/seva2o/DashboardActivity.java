@@ -9,6 +9,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.siva.seva2o.Base.TTSUtility;
+
 import java.util.ArrayList;
 
 public class DashboardActivity extends AppCompatActivity {
@@ -19,6 +21,7 @@ public class DashboardActivity extends AppCompatActivity {
     private ArrayList<String> iconNames;
     private int currentIndex = 0;
     private MediaPlayer mediaPlayer;
+    private TTSUtility ttsUtility;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +33,9 @@ public class DashboardActivity extends AppCompatActivity {
         iconCurrent = findViewById(R.id.icon_current);
         iconNext = findViewById(R.id.icon_next);
         iconNameTextView = findViewById(R.id.icon_name);
+
+        // Initialize TTS Utility
+        ttsUtility = TTSUtility.getInstance(this);
 
         // List of icons
         icons = new ArrayList<>();
@@ -121,6 +127,9 @@ public class DashboardActivity extends AppCompatActivity {
         // Update the TextView with the current icon name
         iconNameTextView.setText(iconNames.get(currentIndex));
 
+        // Speak the current icon name
+        ttsUtility.speak(iconNames.get(currentIndex));
+
         // Set next icon
         int nextIndex = (currentIndex + 1) % icons.size();
         iconNext.setImageResource(icons.get(nextIndex));
@@ -130,10 +139,13 @@ public class DashboardActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        // Release MediaPlayer when activity is destroyed
+        // Release MediaPlayer and TTSUtility when activity is destroyed
         if (mediaPlayer != null) {
             mediaPlayer.release();
             mediaPlayer = null;
+        }
+        if (ttsUtility != null) {
+            ttsUtility.shutdown();
         }
         super.onDestroy();
     }

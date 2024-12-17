@@ -39,5 +39,6 @@ dependencies {
     androidTestImplementation libs.espresso.core
 
     implementation(libs.sdk.speechrecognitionservice)
+    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
 
 }

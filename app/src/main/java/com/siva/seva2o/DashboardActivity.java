@@ -4,6 +4,8 @@ import android.animation.ObjectAnimator;
 import android.animation.AnimatorSet;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -13,12 +15,22 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.siva.seva2o.Base.TTSUtility;
 
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class DashboardActivity extends AppCompatActivity {
 
     private ImageView iconPrevious, iconCurrent, iconNext;
-    private TextView iconNameTextView;
+    private TextView iconNameTextView, weatherTextView;
+    private final OkHttpClient client = new OkHttpClient();
     private ArrayList<Integer> icons;
     private ArrayList<String> iconNames;
     private int currentIndex = 0;
@@ -35,6 +47,9 @@ public class DashboardActivity extends AppCompatActivity {
         iconCurrent = findViewById(R.id.icon_current);
         iconNext = findViewById(R.id.icon_next);
         iconNameTextView = findViewById(R.id.icon_name);
+
+        // Initialize TextView
+        weatherTextView = findViewById(R.id.weatherTextView);
 
         // Initialize TTS Utility
         ttsUtility = TTSUtility.getInstance(this);
@@ -66,6 +81,60 @@ public class DashboardActivity extends AppCompatActivity {
 
         // Set initial state
         updateIcons();
+
+        // Fetch weather details
+        fetchLocationAndWeather();
+    }
+
+    private void fetchLocationAndWeather() {
+        // Fetch location from ip-api
+        String locationApiUrl = "http://ip-api.com/json";
+        Request locationRequest = new Request.Builder().url(locationApiUrl).build();
+
+        client.newCall(locationRequest).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    try {
+                        JSONObject locationJson = new JSONObject(response.body().string());
+                        String city = locationJson.getString("city");
+                        fetchWeatherForCity(city);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+    private void fetchWeatherForCity(String city) {
+        // Fetch weather from wttr.in
+        String weatherApiUrl = "https://wttr.in/" + city + "?format=%C+%t"; // %C = condition, %t = temperature
+        Request weatherRequest = new Request.Builder().url(weatherApiUrl).build();
+
+        client.newCall(weatherRequest).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String weatherData = response.body().string();
+
+                    // Update TextView on the main thread
+                    new Handler(Looper.getMainLooper()).post(() ->
+                            weatherTextView.setText(city + ", " + weatherData)
+                    );
+                }
+            }
+        });
     }
 
     // Handle key events for navigation

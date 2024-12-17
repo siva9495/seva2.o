@@ -1,5 +1,7 @@
 package com.siva.seva2o;
 
+import android.animation.ObjectAnimator;
+import android.animation.AnimatorSet;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -83,6 +85,7 @@ public class DashboardActivity extends AppCompatActivity {
     private void moveRight() {
         currentIndex = (currentIndex + 1) % icons.size();
         playSound();
+        animateIcons("right");
         updateIcons();
     }
 
@@ -90,6 +93,7 @@ public class DashboardActivity extends AppCompatActivity {
     private void moveLeft() {
         currentIndex = (currentIndex - 1 + icons.size()) % icons.size();
         playSound();
+        animateIcons("left");
         updateIcons();
     }
 
@@ -107,12 +111,60 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
+    // Animate icons smoothly
+    private void animateIcons(String direction) {
+        float translationDistance = 300f; // Pixels to slide icons
+
+        // Animate current icon fading out
+        ObjectAnimator currentFadeOut = ObjectAnimator.ofFloat(iconCurrent, "alpha", 1f, 0f);
+
+        // Animate next icon to the center
+        ObjectAnimator nextToCenter = ObjectAnimator.ofFloat(iconNext, "translationX",
+                direction.equals("right") ? translationDistance : -translationDistance, 0f);
+        ObjectAnimator nextFadeIn = ObjectAnimator.ofFloat(iconNext, "alpha", 0f, 1f);
+
+        // Animate previous icon to the center
+        ObjectAnimator previousToCenter = ObjectAnimator.ofFloat(iconPrevious, "translationX",
+                direction.equals("right") ? -translationDistance : translationDistance, 0f);
+        ObjectAnimator previousFadeIn = ObjectAnimator.ofFloat(iconPrevious, "alpha", 0f, 1f);
+
+        // Combine animations: Fade out current, move next/previous into center
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.playTogether(currentFadeOut, nextToCenter, nextFadeIn, previousToCenter, previousFadeIn);
+        animatorSet.setDuration(300); // Animation duration
+
+        // Add listener to trigger TTS only after animation completes
+        animatorSet.addListener(new android.animation.Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(android.animation.Animator animator) {}
+
+            @Override
+            public void onAnimationEnd(android.animation.Animator animator) {
+                updateIcons(); // Update the UI state
+                speakCurrentIcon(); // Speak the current icon name
+            }
+
+            @Override
+            public void onAnimationCancel(android.animation.Animator animator) {}
+
+            @Override
+            public void onAnimationRepeat(android.animation.Animator animator) {}
+        });
+
+        animatorSet.start();
+    }
+
+    private void speakCurrentIcon() {
+        if (ttsUtility != null) {
+            ttsUtility.speak(iconNames.get(currentIndex));
+        }
+    }
+
     // Update icon visibility, opacity, and name
     private void updateIcons() {
         // Set previous icon
         int prevIndex = (currentIndex - 1 + icons.size()) % icons.size();
         if (currentIndex == 0) {
-            // If at the start, hide the previous icon
             iconPrevious.setVisibility(View.INVISIBLE);
         } else {
             iconPrevious.setImageResource(icons.get(prevIndex));
@@ -127,9 +179,6 @@ public class DashboardActivity extends AppCompatActivity {
         // Update the TextView with the current icon name
         iconNameTextView.setText(iconNames.get(currentIndex));
 
-        // Speak the current icon name
-        ttsUtility.speak(iconNames.get(currentIndex));
-
         // Set next icon
         int nextIndex = (currentIndex + 1) % icons.size();
         iconNext.setImageResource(icons.get(nextIndex));
@@ -139,7 +188,7 @@ public class DashboardActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        // Release MediaPlayer and TTSUtility when activity is destroyed
+        // Release MediaPlayer and TTSUtility
         if (mediaPlayer != null) {
             mediaPlayer.release();
             mediaPlayer = null;

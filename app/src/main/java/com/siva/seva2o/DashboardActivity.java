@@ -162,6 +162,16 @@ public class DashboardActivity extends AppCompatActivity {
 
     // Update icon visibility, opacity, and name
     private void updateIcons() {
+        // Set previous icon
+        int prevIndex = (currentIndex - 1 + icons.size()) % icons.size();
+        if (currentIndex == 0) {
+            iconPrevious.setVisibility(View.INVISIBLE);
+        } else {
+            iconPrevious.setImageResource(icons.get(prevIndex));
+            iconPrevious.setVisibility(View.VISIBLE);
+            iconPrevious.setAlpha(0.3f);
+        }
+
         // Set current icon
         iconCurrent.setImageResource(icons.get(currentIndex));
         iconCurrent.setAlpha(1.0f);

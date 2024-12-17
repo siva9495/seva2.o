@@ -5,5 +5,10 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
-    <style name="Theme.SEVA2O" parent="Base.Theme.SEVA2O" />
+    <style name="Theme.SEVA2O" parent="Base.Theme.SEVA2O" >
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">@color/orange</item>
+        <!-- Optionally, make the status bar text white -->
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
 </resources>
